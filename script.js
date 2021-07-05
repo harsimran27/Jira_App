@@ -89,15 +89,30 @@ addBtn.addEventListener("click", function () {
             let ticketDiv = document.createElement("div");
             ticketDiv.classList.add("ticket");
 
+            ticketDiv.setAttribute("data-id", id);
 
-            ticketDiv.innerHTML = `<div class="ticket-color ${ticketColor}"></div>
+
+            ticketDiv.innerHTML = `<div data-id = "${id}" class="ticket-color ${ticketColor}"></div>
                 <div class="ticket-id">${id}</div>
-                <div class="actual-task">${task}</div>`;
+                <div data-id = "${id}" class="actual-task" contenteditable="true">${task}</div>`;
 
             let ticketColorDiv = ticketDiv.querySelector(".ticket-color");
+            let actualTaskDiv = ticketDiv.querySelector(".actual-task");
+
+            actualTaskDiv.addEventListener("input", function (e) {
+                let updatedTask = e.currentTarget.innerText;
+                let currTickedId = e.currentTarget.getAttribute("data-id");
+
+                let allTickets = JSON.parse(localStorage.getItem("AllTickets"));
+
+                allTickets[currTickedId].taskValue = updatedTask;
+
+                localStorage.setItem("AllTickets", JSON.stringify(allTickets));
+            })
 
             ticketColorDiv.addEventListener("click", function (e) {
                 // let colors = ["pink", "blue", "green", "black"];
+                let currTicketId = e.currentTarget.getAttribute("data-id");
 
                 let currColor = e.currentTarget.classList[1]; //green
 
@@ -111,13 +126,28 @@ addBtn.addEventListener("click", function () {
 
                 let newColor = colors[index];
 
+                let allTickets = JSON.parse(localStorage.getItem("AllTickets"));
+
+                allTickets[currTicketId].color = newColor;
+
+                localStorage.setItem("AllTickets", JSON.stringify(allTickets));
+
                 ticketColorDiv.classList.remove(currColor);
                 ticketColorDiv.classList.add(newColor);
             });
 
             ticketDiv.addEventListener("click", function (e) {
                 if (deleteMode) {
+
+                    let currTicketId = e.currentTarget.getAttribute("data-id");
+
                     e.currentTarget.remove();
+
+                    let allTickets = JSON.parse(localStorage.getItem("AllTickets"));
+
+                    delete allTickets[currTicketId];
+
+                    localStorage.setItem("AllTickets", JSON.stringify(allTickets));
                 }
             });
 

@@ -225,4 +225,6 @@ body {
   padding: 10px;
   font-size: 1.1rem;
   overflow: auto;
+  text-align: center;
+  outline: none;
 }
