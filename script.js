@@ -8,7 +8,16 @@ let deleteMode = false;
 
 let colors = ["pink", "blue", "green", "black"];
 
-if (localStorage.getItem("allTickets") == undefined) {
+let allFiltersChildren = document.querySelectorAll(".filter div");
+
+for (let i = 0; i < allFiltersChildren.length; i++) {
+    allFiltersChildren[i].addEventListener("click", function (e) {
+        let filterColor = e.currentTarget.classList[0];
+        loadTasks(filterColor);
+    });
+}
+console.log(localStorage.getItem("AllTickets"));
+if (localStorage.getItem("AllTickets") == undefined) {
 
     let allTickets = {};
 
@@ -16,6 +25,8 @@ if (localStorage.getItem("allTickets") == undefined) {
 
     localStorage.setItem("AllTickets", allTickets);
 }
+
+loadTasks();
 
 deleteBtn.addEventListener("click", function (e) {
     if (e.currentTarget.classList.contains("delete-selected")) {
@@ -30,7 +41,7 @@ deleteBtn.addEventListener("click", function (e) {
 addBtn.addEventListener("click", function () {
 
     deleteBtn.classList.remove("delete-selected")
-    deleteMode = false
+    deleteMode = false;
 
     let preModal = document.querySelector(".modal");
 
@@ -158,3 +169,92 @@ addBtn.addEventListener("click", function () {
 
     body.append(div);
 })
+
+function loadTasks(color) {
+
+    let ticketsOnUi = document.querySelectorAll(".ticket");
+
+    for (let i = 0; i < ticketsOnUi.length; i++) {
+        ticketsOnUi[i].remove();
+    }
+
+    let allTickets = JSON.parse(localStorage.getItem("AllTickets"));
+
+    for (x in allTickets) {
+
+        let currTicketId = x;
+        let singleTicketObj = allTickets[x];
+
+        if (color) {
+            if (color != singleTicketObj.color) continue;
+        }
+
+        let ticketDiv = document.createElement("div");
+        ticketDiv.classList.add("ticket");
+
+        ticketDiv.setAttribute("data-id", currTicketId);
+
+
+        ticketDiv.innerHTML = `<div data-id = "${currTicketId}" class="ticket-color ${singleTicketObj.color}"></div>
+                    <div class="ticket-id">${currTicketId}</div>
+                    <div data-id = "${currTicketId}" class="actual-task" contenteditable="true">${singleTicketObj.taskValue}</div>`;
+
+        let ticketColorDiv = ticketDiv.querySelector(".ticket-color");
+        let actualTaskDiv = ticketDiv.querySelector(".actual-task");
+
+        actualTaskDiv.addEventListener("input", function (e) {
+            let updatedTask = e.currentTarget.innerText;
+            let currTickedId = e.currentTarget.getAttribute("data-id");
+
+            let allTickets = JSON.parse(localStorage.getItem("AllTickets"));
+
+            allTickets[currTickedId].taskValue = updatedTask;
+
+            localStorage.setItem("AllTickets", JSON.stringify(allTickets));
+        })
+
+        ticketColorDiv.addEventListener("click", function (e) {
+            // let colors = ["pink", "blue", "green", "black"];
+            let currTicketId = e.currentTarget.getAttribute("data-id");
+
+            let currColor = e.currentTarget.classList[1]; //green
+
+            let index = -1;
+            for (let i = 0; i < colors.length; i++) {
+                if (colors[i] == currColor) index = i;
+            }
+
+            index++;
+            index = index % 4;
+
+            let newColor = colors[index];
+
+            let allTickets = JSON.parse(localStorage.getItem("AllTickets"));
+
+            allTickets[currTicketId].color = newColor;
+
+            localStorage.setItem("AllTickets", JSON.stringify(allTickets));
+
+            ticketColorDiv.classList.remove(currColor);
+            ticketColorDiv.classList.add(newColor);
+        });
+
+        ticketDiv.addEventListener("click", function (e) {
+            if (deleteMode) {
+
+                let currTicketId = e.currentTarget.getAttribute("data-id");
+
+                e.currentTarget.remove();
+
+                let allTickets = JSON.parse(localStorage.getItem("AllTickets"));
+
+                delete allTickets[currTicketId];
+
+                localStorage.setItem("AllTickets", JSON.stringify(allTickets));
+            }
+        });
+
+        grid.append(ticketDiv);
+    }
+
+}
